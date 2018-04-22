@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import LineArt from './LineArt'
 
-class App extends Component {
+class App extends Component<{}> {
   constructor() {
     super()
     this.state = {
