@@ -1,4 +1,6 @@
 {
-    "flow.useNPMPackagedFlow": true,
+  "flow.useNPMPackagedFlow": true,
+  "[javascript]": {
     "editor.formatOnSave": true
+  }
 }
