@@ -2,10 +2,12 @@
 
 import React from 'react'
 import type { StatelessFunctionalComponent } from 'react'
+import styled, { keyframes } from 'styled-components'
 
 type Props = {
     radius: number,
-    npoints: number
+    npoints: number,
+    animate: boolean
 }
 
 type Point = {
@@ -25,20 +27,14 @@ const getPoints = (radius: number, npoints: number): Array<Point> => {
     return points
 }
 
-type Line = {
+export type LineProps = {
     x1: number,
     y1: number,
     x2: number,
     y2: number
 }
 
-const almostEqual = (numA: number, numB: number): boolean => Math.abs(numA - numB) < Number.EPSILON
-
-const isLineEqual = (lineA: Line, lineB: Line): boolean =>
-    (almostEqual(lineA.x1, lineB.x1) && almostEqual(lineA.y1, lineB.y1) && almostEqual(lineA.x2, lineB.x2) && almostEqual(lineA.y2, lineB.y2)) ||
-    (almostEqual(lineA.x1, lineB.x2) && almostEqual(lineA.y1, lineB.y2) && almostEqual(lineA.x2, lineB.x1) && almostEqual(lineA.y2, lineB.y1))
-
-const createLine = (pointA: Point, pointB: Point): Line => {
+const createLine = (pointA: Point, pointB: Point): LineProps => {
     return {
         x1: pointA.x,
         y1: pointA.y,
@@ -47,25 +43,52 @@ const createLine = (pointA: Point, pointB: Point): Line => {
     }
 }
 
-const getLines = (radius: number, npoints: number): Array<Line> => {
+const almostEqual = (numA: number, numB: number): boolean => Math.abs(numA - numB) < Number.EPSILON
+
+const linesEqual = (lineA: LineProps, lineB: LineProps): boolean =>
+    (almostEqual(lineA.x1, lineB.x1) && almostEqual(lineA.y1, lineB.y1) && almostEqual(lineA.x2, lineB.x2) && almostEqual(lineA.y2, lineB.y2)) ||
+    (almostEqual(lineA.x1, lineB.x2) && almostEqual(lineA.y1, lineB.y2) && almostEqual(lineA.x2, lineB.x1) && almostEqual(lineA.y2, lineB.y1))
+
+const getLines = (radius: number, npoints: number): Array<LineProps> => {
     const points = getPoints(radius, npoints)
     const lines = []
     points.forEach(a => {
         points.forEach(b => {
             if (a !== b) {
                 const line = createLine(a, b)
-                if (!lines.find(l => isLineEqual(line, l))) lines.push(line)
+                if (!lines.find(l => linesEqual(line, l))) lines.push(line)
             }
         })
     })
     return lines
 }
 
-const LineArt: StatelessFunctionalComponent<Props> = ({ radius, npoints }) => (
+const square = (x: number): number => x*x
+const distance = (x1: number, y1: number, x2: number, y2: number): number => Math.sqrt(square(x1-x2)+square(y1-y2))
+
+const dash = keyframes`
+  to {
+      stroke-dashoffset: 0;
+  }
+`
+
+const Line = styled.line.attrs({
+    style: ({ x1, y1, x2, y2, delay, animate }) => ({
+        strokeDasharray: distance(x1, y1, x2, y2),
+        strokeDashoffset: animate ? distance(x1, y1, x2, y2) : 0,
+        animationDelay: animate ? `${delay}s` : undefined
+    }),
+    stroke: "black",
+    strokeWidth: 1
+})`
+    ${({ animate }) => animate ? `animation: ${dash} 0.5s linear forwards;` : ``}
+`
+
+const LineArt: StatelessFunctionalComponent<Props> = ({ radius, npoints, animate }) => (
     <svg viewBox={`${-radius} ${-radius} ${2*radius} ${2*radius}`} width={radius*2} height={radius*2}>
         <circle cx={0} cy={0} r={radius} stroke="black" fill="none" />
-        {getLines(radius, npoints).map(({ x1, y1, x2, y2 }) => (
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="black" strokeWidth={1} />
+        {getLines(radius, npoints).map((l, i) => (
+            <Line {...l} animate={animate} delay={i*0.05} key={JSON.stringify(l)} />
         ))}
     </svg>
 )
