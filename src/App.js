@@ -1,7 +1,14 @@
+// @flow
+
 import React, { Component } from 'react'
 import LineArt from './LineArt'
 
-class App extends Component<{}> {
+type State = {
+  radius: number,
+  npoints: number
+}
+
+class App extends Component<{}, State> {
   constructor() {
     super()
     this.state = {

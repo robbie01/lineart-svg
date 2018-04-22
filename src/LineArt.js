@@ -1,4 +1,7 @@
-import React, { StatelessFunctionalComponent } from 'react'
+// @flow
+
+import React from 'react'
+import type { StatelessFunctionalComponent } from 'react'
 
 type Props = {
     radius: number,
